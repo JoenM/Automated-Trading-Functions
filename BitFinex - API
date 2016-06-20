@@ -1,0 +1,42 @@
+import json
+import httplib
+import base64
+import hashlib
+import time
+import hmac
+import urllib
+
+url = 'https://bitfinex.com/api/v1/order/new'
+bitfinexKey = '' #Insert Api Key
+bitfinexSecret = '' #Insert Api Secret
+
+
+def place_order(amount, price, BuyOrSell): # submit a new order.
+    nonce = int (round(time.time()-1398621111,1)*10)
+    payload = {
+                "request":"/v1/order/new",
+                "nonce":nonce,
+                "symbol": "BTCUSD",
+		"amount":amount,
+                "price":price,
+                "exchange":"bitfinex",
+		"side":BuyOrSell,
+                "type":"market"}
+    payload = urllib.urlencode(payload)
+
+
+    hashed = hmac.new(bitfinexSecret,digestmod = hashlib.sha384)
+    hashed.update(payload)
+    signature = hashed.hexdigest()
+
+    #signature = hashlib.sha384(bitfinexSecret).update(payload).hexdigest()
+    
+    headers = {'X-BFX-APIKEY' : bitfinexKey,
+               'X-BFX-PAYLOAD' : base64.b64encode(payload),
+               'X-BFX-SIGNATURE' : signature}
+
+    conn = httplib.HTTPSConnection("bitfinex.com")
+    conn.request("POST","/v1/order/new",headers)
+
+    response = sonn
+                              

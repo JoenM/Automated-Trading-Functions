@@ -1,0 +1,39 @@
+import urllib2
+import json
+import urllib
+import hashlib
+import httplib
+import time
+import hmac
+
+api_key = '' # Insert API Key
+api_secret = '' # Insert API Secret
+url = "https://api.therocktrading.com/v1/funds/BTCEUR/orders"
+
+def trade(buyORsell,Rate,HowMuch):
+    nonce = int (round(time.time()-1398621111,1)*10)
+    parms = {"method":"Trade",
+             "pair":"ltc_usd",
+             "type":buyORsell,
+             "rate":Rate,
+             "amount":HowMuch,
+             "nonce":nonce}
+    parms = urllib.urlencode(parms)
+    hashed = hmac.new(api_secret,digestmod=hashlib.sha512)
+    hashed.update(parms+url)
+    signature = hashed.hexdigest()
+
+    headers = {"Content-Type":"application/json",
+               "X-TRT-KEY":api_key,
+               "X-TRT-SIGN":signature,
+               "X-TRT-NONCE":nonce
+               }
+        
+    conn = httplib.HTTPSConnection("therocktrading.com")
+    conn.request("POST","v1/funds/BTCEUR/orders",parms,headers)
+    
+    response = conn.getresponse()
+    print(response.status,response.reason)
+
+    resp = json.load(response)
+    print resp
